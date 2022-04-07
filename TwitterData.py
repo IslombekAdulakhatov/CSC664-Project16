@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import re
 import matplotlib.pyplot as plt
+import PySimpleGUI as sg
 plt.style.use('fivethirtyeight')
 
 consumerKey = 'HFQ4Q2lpgyv8MxP4iQF5icimc'
@@ -30,6 +31,8 @@ for tweet in posts:
 df = pd.DataFrame(data, columns=columns)
 print("***Keyword Search***", df)
 
+headings1 = list(columns)
+values1 = df.values.tolist()
 
 def cleanText(text):
     text = re.sub(r'@[A-Za-z0-9]+', '', text)
@@ -43,6 +46,8 @@ def cleanText(text):
 df['Tweets'] = df['Tweets'].apply(cleanText)
 print("***Cleaned Tweets***", df)
 
+headings2 = list(columns)
+values2 = df.values.tolist()
 
 def getSubjectivity(text):
     return TextBlob(text).sentiment.subjectivity
@@ -53,7 +58,8 @@ def getPolarity(text):
 df['Subjectivity'] = df['Tweets'].apply(getSubjectivity)
 df['Polarity'] = df['Tweets'].apply(getPolarity)
 
-print("******Subjectivity and Polarity******", np)
+values3 = df.values.tolist()
+print("******Subjectivity and Polarity******", df)
 
 
 #Show plot
@@ -81,7 +87,7 @@ def getAnalysis(score):
 df['Analysis'] = df['Polarity'].apply(getAnalysis)
 print("********Analysis**********",df)
 
-
+values4 = df.values.tolist()
 
 
 #Print positive tweets
@@ -147,3 +153,19 @@ plt.xlabel('Sentiment')
 plt.ylabel('Count')
 df['Analysis'].value_counts().plot(kind='bar')
 plt.show()
+
+
+layout = [
+    [sg.Text(text="Initial Retrieval"), sg.Text(text= "Polarity and Subjectivity", pad=(310,0))],
+    [sg.Table(values=values1, headings= headings1, auto_size_columns=False, col_widths=[10, 30]), sg.VSeparator(),
+     sg.Table(values=values3, headings= ["Users", "Tweets", "Subjectivity", "Polarity"], auto_size_columns=False, col_widths=[10, 30, 10, 10])],
+    [sg.Text(text="Cleaned Tweets"), sg.Text(text= "Analysis", pad=(310,0))],
+    [sg.Table(values=values2, headings= headings2, auto_size_columns=False, col_widths=[10, 30]), sg.VSeparator(),
+     sg.Table(values=values4, headings= ["Users", "Tweets", "Subjectivity", "Polarity", "Analysis"], auto_size_columns=False, col_widths=[10, 30, 10, 10, 10])],
+
+    [sg.Text(text = "Conclusion: In this sample of tweets, we found that " + str(round((ptweets.shape[0] / df.shape[0]) * 100, 1)) + "% of our tweets were positive. \n")],
+    [sg.Text(text = "On the other hand, " + str(round((ntweets.shape[0] / df.shape[0] * 100), 1)) + "% of our tweets were negative. \n")],
+    [sg.Text(text ="The final remaining " + str(round(100 - (ntweets.shape[0] / df.shape[0] * 100), 1) - round((ptweets.shape[0] / df.shape[0]) * 100, 1)) + "% was nuetral.")]
+]
+window = sg.Window("Data", layout)
+event, values = window.read()
