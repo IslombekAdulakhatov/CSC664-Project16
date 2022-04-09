@@ -1,22 +1,59 @@
 import tweepy
+import psycopg2
 from textblob import TextBlob
 from wordcloud import WordCloud
 import pandas as pd
 import numpy as np
+from privatevars import *
 import re
 import matplotlib.pyplot as plt
 import PySimpleGUI as sg
 plt.style.use('fivethirtyeight')
 
-consumerKey = 'HFQ4Q2lpgyv8MxP4iQF5icimc'
-consumerSecret = 'tmt5wTAiHEQXvjpDcd0Ph1KrH4Lg9fxjT5pHn0rz6PA0blsBkK'
-accessToken = '1509962661844307969-QtjrQDIUSZT0NO1ZOf7iKXa1phViF1'
-accessTokenSecret = 'gmjt6v6rNqIwJ97HYul6gutPcMw8u9J4Zan9De9o7G0Pg'
 
 authenticate = tweepy.OAuthHandler(consumerKey, consumerSecret)
 authenticate.set_access_token(accessToken, accessTokenSecret)
-
 api = tweepy.API(authenticate, wait_on_rate_limit = True)
+
+conn = None
+cur = None
+
+connection = psycopg2.connect(
+    host = hostname,
+    dbname = database,
+    user = username,
+    password = pwd,
+    port = port_id
+)
+
+cursor = connection.cursor()
+
+try:
+    create_script = '''CREATE TABLE IF NOT EXISTS tweets( 
+                                id SERIAL PRIMARY KEY,
+                                tweet_id BIGINT NOT NULL, 
+                                text VARCHAR NOT NULL, 
+                                screen_name VARCHAR NOT NULL, 
+                                author_id BIGINT 
+                                )'''
+    cursor.execute(create_script)
+
+    posts = tweepy.Cursor(api.search_tweets,
+                          q="Duragesic OR Fentanyl OR Hydrocodone OR Hydros OR Oxy OR Oxycodone OR Oxycotin OR Oxycotton OR Vicodin OR Vikes OR Oxycontin",
+                          tweet_mode="extended").items(500)
+    for tweet in posts:
+        cursor.execute("SELECT id FROM tweets WHERE text = %s;", [tweet.full_text])
+        if cursor.rowcount == 0:
+            cursor.execute("INSERT INTO tweets (tweet_id, text, screen_name, author_id) VALUES (%s, %s, %s, %s);", (tweet.id, tweet.full_text, tweet.author.screen_name, tweet.author.id))
+            connection.commit()
+except Exception as error:
+    print(error)
+except UnicodeEncodeError:
+    pass
+finally:
+    cursor.close()
+    connection.close()
+
 
 data = []
 columns = ['User', 'Tweets']
@@ -68,7 +105,7 @@ wordCloud = WordCloud(width = 500, height = 300, random_state = 21, max_font_siz
 
 plt.imshow(wordCloud, interpolation = "bilinear")
 plt.axis('off')
-plt.show()
+#plt.show()
 
 
 
@@ -152,7 +189,7 @@ plt.title('Sentiment Analysis')
 plt.xlabel('Sentiment')
 plt.ylabel('Count')
 df['Analysis'].value_counts().plot(kind='bar')
-plt.show()
+#plt.show()
 
 
 layout = [
