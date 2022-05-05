@@ -1,9 +1,3 @@
-hostname = 'localhost'
-database = 'TwitterData'
-username = 'postgres'
-pwd = '36Reasons'
-port_id = 5432
-
 consumerKey = 'HFQ4Q2lpgyv8MxP4iQF5icimc'
 consumerSecret = 'tmt5wTAiHEQXvjpDcd0Ph1KrH4Lg9fxjT5pHn0rz6PA0blsBkK'
 accessToken = '1509962661844307969-QtjrQDIUSZT0NO1ZOf7iKXa1phViF1'
