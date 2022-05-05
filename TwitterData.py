@@ -70,11 +70,26 @@ def getAnalysis(score):
     else:
         return 'Positive'
 
+#Category
+def getCategory(subjectiveness):
+    if subjectiveness < 0:
+        return 'Personal Experience'
+    elif subjectiveness == 0:
+        return 'General Perception'
+    else:
+        return 'Personal Experience'
+
 
 df['Analysis'] = df['Polarity'].apply(getAnalysis)
 print("********Analysis**********",df)
 
 values4 = df.values.tolist()
+
+df['Category'] = df['Subjectivity'].apply(getCategory)
+print("********Category**********",df)
+
+headings3 = list(columns)
+values5 = df.values.tolist()
 
 
 #Print positive tweets
@@ -150,6 +165,8 @@ layout = [
     [sg.Table(values=values2, headings= headings2, auto_size_columns=False, col_widths=[10, 30]), sg.VSeparator(),
      sg.Table(values=values4, headings= ["Users", "Tweets", "Subjectivity", "Polarity", "Analysis"], auto_size_columns=False, col_widths=[10, 30, 10, 10, 10])],
 
+    [sg.Text(text="Categorization")],
+    [sg.Table(values=values5, headings= ["Users", "Tweets", "Subjectivity", "Polarity", "Analysis", "Category"], auto_size_columns=False, col_widths=[10, 30, 10, 10, 10])],
     [sg.Text(text = "Conclusion: In this sample of tweets, we found that " + str(round((ptweets.shape[0] / df.shape[0]) * 100, 1)) + "% of our tweets were positive. \n")],
     [sg.Text(text = "On the other hand, " + str(round((ntweets.shape[0] / df.shape[0] * 100), 1)) + "% of our tweets were negative. \n")],
     [sg.Text(text ="The final remaining " + str(round(100 - (ntweets.shape[0] / df.shape[0] * 100), 1) - round((ptweets.shape[0] / df.shape[0]) * 100, 1)) + "% was nuetral.")]
